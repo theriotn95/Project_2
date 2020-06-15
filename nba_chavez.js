@@ -1,6 +1,6 @@
 var svg = d3
     .select("#chChavez")
-    .append("svg")
+    .append("svg");
 ​
 var data = [
     { "Player": "Gorgui Dieng", "Rating": 76, "Salary": 16229213 },
