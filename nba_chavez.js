@@ -1,14 +1,10 @@
-var width = parseInt(d3.select("#chChavez").style("width"));
-
-var height = width - width / 3;
 
 var svg = d3
     .select("#chChavez")
     .append("svg")
-    .attr("width", width)
-    .attr("height", height)
     .attr("class", "chart");
-​var data = [
+​
+var data = [
     { "Player": "Gorgui Dieng", "Rating": 76, "Salary": 16229213 },
     { "Player": "Dewayne Dedmon", "Rating": 76, "Salary": 1333334 },
     { "Player": "Jae Crowder", "Rating": 76, "Salary": 7815533 },
