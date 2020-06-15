@@ -1,6 +1,9 @@
-var svg2 = d3
+var svg = d3
     .select("#chChavez")
     .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("class", "chart");
 ​
 var data = [
     { "Player": "Gorgui Dieng", "Rating": 76, "Salary": 16229213 },
@@ -30,23 +33,23 @@ var x = d3.scale.linear()
 y.domain(data.map(function (d) { return d.Player; }));
 x.domain([d3.min(data, function (d) { return d.Rating; }), d3.max(data, function (d) { return d.Salary; })]);
 ​
-var xAxis = d3.svg2.axis()
+var xAxis = d3.svg.axis()
     .scale(x)
     .orient("bottom")
     .ticks(7);
 ​
-var yAxis = d3.svg2.axis()
+var yAxis = d3.svg.axis()
     .scale(y)
     .orient("left");
 // Append SVG element
 ​
-var svg2 = d3.select("body").append("svg")
+var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 ​
-svg2.append("g")
+svg.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")")
     .call(xAxis)
@@ -56,11 +59,11 @@ svg2.append("g")
     .attr("dy", "-.71em")
     .text("Ratings vs Salaries in Mill");
 ​
-svg2.append("g")
+svg.append("g")
     .attr("class", "y axis")
     .call(yAxis);
 ​
-svg2.selectAll(".bar")
+svg.selectAll(".bar")
     .data(data)
     .enter().append("rect")
     .attr("class", "bar")
@@ -70,7 +73,7 @@ svg2.selectAll(".bar")
     .attr("width", function (d) { return x(d.Salary) - x(d.Rating) });
 ​
 // add legend
-var legend = svg2.append("g")
+var legend = svg.append("g")
     .attr("class", "legend")
 ​
 legend
@@ -99,7 +102,7 @@ tooltip.append('div')
 tooltip.append('div')
     .attr('class', 'Salaries');
 ​
-svg2.selectAll(".bar")
+svg.selectAll(".bar")
     // Create "mouseover" event listener
     .on('mouseover', function (d) {
 ​
