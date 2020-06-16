@@ -1,31 +1,23 @@
-/*
- * Modified the following radar chart by Mali Akmanalp to fit our dataset.
- * Added legends for colors and highlighting for the selected player's name.
- *
- * Configurable-axis radar chart that supports different scales per axis
- * By Mali Akmanalp
- *
- * Read more here: http://medium.com/@makmanalp/
- *
- * Heavily modified but based on from Nadieh Bremer's original radar chart:
- * http://bl.ocks.org/nbremer/21746a9668ffdf6d8242
- *
- * Released under the MIT license.
- */
+// Original website visited below recommended the later websites for radar chart coding
+//http://bl.ocks.org/chrisrzhou/2421ac6541b68c1680f8
+
+//https://github.com/alangrafu/radar-chart-d3
+//http://bl.ocks.org/nbremer/6506614
+ 
 function RadarChart(id, data, options) {
     let fullDataset = data;
-    var cfg = {
-      w: 600, //Width of the circle
-      h: 600, //Height of the circle
-      margin: {top: 20, right: 20, bottom: 20, left: 20}, //The margins of the SVG
-      labelFactor: 0.85,  //How much farther than the radius of the outer circle should the labels be placed
-      wrapWidth: 60,      //The number of pixels after which a label needs to be given a new line
-      opacityArea: 0.35,  //The opacity of the area of the blob
-      dotRadius: 4,       //The size of the colored circles of each blog
-      opacityCircles: 0.1,//The opacity of the circles of each blob
-      strokeWidth: 0.7,   //The width of the stroke around each blob
-      roundStrokes: false,//If true the area and stroke will follow a round path (cardinal-closed)
-      color: d3.scale.category10(),  //Color function
+    var config = {
+      w: 600, 
+      h: 600, 
+      margin: {top: 20, right: 20, bottom: 20, left: 20}, 
+      labelFactor: 0.85,  
+      wrapWidth: 60,      
+      opacityArea: 0.35,  
+      dotRadius: 4,       
+      opacityCircles: 0.1,
+      strokeWidth: 0.7,   
+      roundStrokes: false,
+      color: d3.scale.category10(),  
       hover: true,
       axisLabels: true,
       tickLabels: true,
@@ -33,45 +25,44 @@ function RadarChart(id, data, options) {
       scalesAndAxes: false,
     };
 
-    //Put all of the options into a variable called cfg
+    //Put all of the options into a variable called config
     if('undefined' !== typeof options){
       for(var i in options){
-        if('undefined' !== typeof options[i]){ cfg[i] = options[i]; }
+        if('undefined' !== typeof options[i]){ config[i] = options[i]; }
       }
     }
 
     // If label specified, filter and sort data to label
-    if (cfg.label != false){
-      data = subsetAndSortData(data, cfg.label);
+    if (config.label != false){
+      data = subsetAndSortData(data, config.label);
     } else {
-      cfg.label = Object.keys(data[0]);
+      config.label = Object.keys(data[0]);
     }
 
     // Auto-generate scales and axes from given data extents or use given ones.
     var autos;
-    if (cfg.scalesAndAxes === false){
+    if (config.scalesAndAxes === false){
       autos = autoScalesAxes(data);
     } else {
-      autos = cfg.scalesAndAxes;
+      autos = config.scalesAndAxes;
     }
-    var scales = cfg.label.map(function(k){ return autos[k].scale; });
-    var axes = cfg.label.map(function(k){ return autos[k].axis; });
+    var scales = config.label.map(function(k){ return autos[k].scale; });
+    var axes = config.label.map(function(k){ return autos[k].axis; });
 
     // Rearrange data to an array of arrays
     data = data.map(function(row){
-      var newRow = cfg.label.map(function(key) {
+      var newRow = config.label.map(function(key) {
           return {"axis": key, "value": row[key]};
       });
       return newRow;
     });
 
-    var total = cfg.label.length,            //The number of different axes
-      radius = Math.min(cfg.w/2, cfg.h/2),    //Radius of the outermost circle
-      angleSlice = Math.PI * 2 / total;       //The width in radians of each "slice"
+    var total = config.label.length,            
+      radius = Math.min(config.w/2, config.h/2),    
+      angleSlice = Math.PI * 2 / total;       
 
     // Update ranges of scales to match radius.
     scales = scales.map(function(i){
-      // This is gross - no other way to get ordinal scales to behave correctly.
       if (typeof i.rangePoints !== 'undefined'){
           return i.rangePoints([0, radius]);
       } else {
@@ -79,33 +70,24 @@ function RadarChart(id, data, options) {
       }
     });
 
-    /////////////////////////////////////////////////////////
-    //////////// Create the container SVG and g /////////////
-    /////////////////////////////////////////////////////////
 
-    //Remove whatever chart with the same id/class was present before
+
+    //Remove chart when deselected
     d3.select(id).select("svg").remove();
 
     //Initiate the radar chart SVG
     var svg = d3.select(id).append("svg")
-      .attr("width",  cfg.w + cfg.margin.left + cfg.margin.right)
-      .attr("height", cfg.h + cfg.margin.top + cfg.margin.bottom)
+      .attr("width",  config.w + config.margin.left + config.margin.right)
+      .attr("height", config.h + config.margin.top + config.margin.bottom)
       .attr("class", "radar"+id);
 
-    //Append a g element
     var g = svg.append("g")
-      .attr("transform", "translate(" + (cfg.w/2 + cfg.margin.left) + "," + (cfg.h/2 + cfg.margin.top) + ")");
+      .attr("transform", "translate(" + (config.w/2 + config.margin.left) + "," + (config.h/2 + config.margin.top) + ")");
 
-    /////////////////////////////////////////////////////////
-    //////////////////// Draw the axes //////////////////////
-    /////////////////////////////////////////////////////////
-
-    //Wrapper for the grid & axes
     var axisGrid = g.append("g").attr("class", "axisWrapper");
 
-    //Create the straight lines radiating outward from the center
     var axis = axisGrid.selectAll(".axis")
-      .data(cfg.label)
+      .data(config.label)
       .enter()
       .append("g")
       .attr("class", "axis");
@@ -115,40 +97,35 @@ function RadarChart(id, data, options) {
       .attr("transform", function(d, i){ return "rotate(" + (180 / Math.PI * (i * angleSlice) + 270) + ")"; })
       .each(function(d, i){
         var ax = axes[i];
-        if (cfg.tickLabels !== true){
+        if (config.tickLabels !== true){
           ax = ax.tickFormat(function(d){ return ""; });
         }
         ax(d3.select(this));
       });
 
     //Append axis category labels
-    if (cfg.axisLabels === true){
+    if (config.axisLabels === true){
         axisGroup.append("text")
         .attr("class", "legend")
         .style("font-size", "11px")
         .attr("text-anchor", "middle")
-        .attr("transform", "translate(" + radius * cfg.labelFactor + ", 20)")
+        .attr("transform", "translate(" + radius * config.labelFactor + ", 20)")
         .attr("dy", "0.35em")
         .text(function(d){return d;})
-        .call(wrap, cfg.wrapWidth);
+        .call(wrap, config.wrapWidth);
     }
 
-    /////////////////////////////////////////////////////////
-    ///////////////// Adds color legend /////////////////////
-    /////////////////////////////////////////////////////////
 
-    let checkedBoxesInput = Array.from(document.querySelectorAll("input.Player-checkbox:checked"));
-    let checkedBoxContainers = checkedBoxesInput.map((input) => input.parentNode);
+
+    let cbinput = Array.from(document.querySelectorAll("input.Player-checkbox:checked"));
+    let checkedBoxContainers = cbinput.map((input) => input.parentNode);
     checkedBoxContainers.forEach((div, i) => {
       let colorDiv = document.createElement("div");
       colorDiv.classList.add("legend-color")
-      colorDiv.setAttribute("style", "background-color:" + cfg.color(i) + ";");
+      colorDiv.setAttribute("style", "background-color:" + config.color(i) + ";");
       div.appendChild(colorDiv);
     });
 
-    /////////////////////////////////////////////////////////
-    ///////////// Draw the radar chart blobs ////////////////
-    /////////////////////////////////////////////////////////
 
 
     //The radial line function
@@ -157,7 +134,7 @@ function RadarChart(id, data, options) {
       .radius(function(d, i) { return scales[i](d.value); })
       .angle(function(d,i) {  return i*angleSlice; });
 
-    if(cfg.roundStrokes) {
+    if(config.roundStrokes) {
       radarLine.interpolate("cardinal-closed");
     }
 
@@ -172,10 +149,10 @@ function RadarChart(id, data, options) {
       .append("path")
       .attr("class", "radarArea")
       .attr("d", function(d,i) { return radarLine(d); })
-      .style("fill", function(d,i) { return cfg.color(i); })
-      .style("fill-opacity", cfg.opacityArea)
+      .style("fill", function(d,i) { return config.color(i); })
+      .style("fill-opacity", config.opacityArea)
       .on('mouseover', function (d,i){
-        if (cfg.hover === true){
+        if (config.hover === true){
           //Dim all blobs
           d3.selectAll(".radarArea")
             .transition().duration(200)
@@ -185,19 +162,19 @@ function RadarChart(id, data, options) {
             .transition().duration(200)
             .style("fill-opacity", 0.7);
         }
-        let checkedBoxesInput = Array.from(document.querySelectorAll("input.name-checkbox:checked"));
-        let legendNames = checkedBoxesInput.map((input) => input.parentNode.querySelector("span"));
+        let cbinput = Array.from(document.querySelectorAll("input.Player-checkbox:checked"));
+        let legendNames = cbinput.map((input) => input.parentNode.querySelector("span"));
         legendNames[i].classList.add("selected-player");
       })
       .on('mouseout', function(d,i){
-        if (cfg.hover === true){
+        if (config.hover === true){
           //Bring back all blobs
           d3.selectAll(".radarArea")
             .transition().duration(200)
-            .style("fill-opacity", cfg.opacityArea);
+            .style("fill-opacity", config.opacityArea);
         }
-        let checkedBoxesInput = Array.from(document.querySelectorAll("input.name-checkbox:checked"));
-        let legendNames = checkedBoxesInput.map((input) => input.parentNode.querySelector("span"));
+        let cbinput = Array.from(document.querySelectorAll("input.Player-checkbox:checked"));
+        let legendNames = cbinput.map((input) => input.parentNode.querySelector("span"));
         legendNames[i].classList.remove("selected-player");
       });
 
@@ -205,8 +182,8 @@ function RadarChart(id, data, options) {
     blobWrapper.append("path")
       .attr("class", "radarStroke")
       .attr("d", function(d,i) { return radarLine(d); })
-      .style("stroke-width", cfg.strokeWidth + "px")
-      .style("stroke", function(d,i) { return cfg.color(i); })
+      .style("stroke-width", config.strokeWidth + "px")
+      .style("stroke", function(d,i) { return config.color(i); })
       .style("fill", "none");
 
     //Append the circles
@@ -214,17 +191,14 @@ function RadarChart(id, data, options) {
       .data(function(d,i) { return d; })
       .enter().append("circle")
       .attr("class", "radarCircle")
-      .attr("r", cfg.dotRadius)
+      .attr("r", config.dotRadius)
       .attr("cx", function(d,i){ return scales[i](d.value) * Math.cos(angleSlice*i - Math.PI/2); })
       .attr("cy", function(d,i){ return scales[i](d.value) * Math.sin(angleSlice*i - Math.PI/2); })
-      .style("fill", function(d,i,j) { return cfg.color(j); })
+      .style("fill", function(d,i,j) { return config.color(j); })
       .style("fill-opacity", 0.8);
 
-    /////////////////////////////////////////////////////////
-    //////// Append invisible circles for tooltip ///////////
-    /////////////////////////////////////////////////////////
 
-    if (cfg.hover === true){
+    if (config.hover === true){
 
       //Wrapper for the invisible circles on top
       var blobCircleWrapper = g.selectAll(".radarCircleWrapper")
@@ -237,7 +211,7 @@ function RadarChart(id, data, options) {
         .data(function(d,i) { return d; })
         .enter().append("circle")
         .attr("class", "radarInvisibleCircle")
-        .attr("r", cfg.dotRadius*1.5)
+        .attr("r", config.dotRadius*1.5)
         .attr("cx", function(d,i){ return scales[i](d.value) * Math.cos(angleSlice*i - Math.PI/2); })
         .attr("cy", function(d,i){ return scales[i](d.value) * Math.sin(angleSlice*i - Math.PI/2); })
         .style("fill", "none")
@@ -264,11 +238,8 @@ function RadarChart(id, data, options) {
         .style("opacity", 0);
   }
 
-    /////////////////////////////////////////////////////////
-    /////////////////// Helper Function /////////////////////
-    /////////////////////////////////////////////////////////
 
-    //Taken from http://bl.ocks.org/mbostock/7555321
+    //http://bl.ocks.org/mbostock/7555321
     //Wraps SVG text
     function wrap(text, width) {
       text.each(function() {
@@ -294,16 +265,11 @@ function RadarChart(id, data, options) {
           }
         }
       });
-    }//wrap
+    }
 
-  }//RadarChart
+  }
 
 
-  /*
-   * Given a dataset which is an array of objects (that all have the same
-   * label), filter and sort those label
-   *
-   */
   function subsetAndSortData(data, label){
     data = data.map(function(row){
       var newRow = {};
@@ -318,11 +284,10 @@ function RadarChart(id, data, options) {
   function autoScalesAxes(data){
 
     var ret = {};
-    var fieldNames = Object.keys(data[0]);
+    var labelNames = Object.keys(data[0]);
 
-    fieldNames.map(function(i){
+    labelNames.map(function(i){
 
-      // Get all data for axis
       var axisData = data.map(function(row){
         return row[i];
       });
@@ -330,10 +295,8 @@ function RadarChart(id, data, options) {
       var scale;
       var axis;
 
-      // Autogenerate a scale
       if ((typeof axisData[0] === "string") || (typeof axisData[0] === "boolean")){
 
-        // Non-numeric things get an ordinal scale
         var uniqueValues = d3.map(data, function(a){return a[i]; }).keys();
         uniqueValues.unshift("  "); // Padding, so it doesn't start from the center
 
@@ -369,3 +332,96 @@ function RadarChart(id, data, options) {
     return ret;
 
   }
+
+  //https://www.youtube.com/watch?v=AseoPgLN7CY
+  //https://github.com/alangrafu/radar-chart-d3/blob/master/src/radar-chart.js
+
+  // data.js
+
+var data =[
+  {"PLAYER":"Giannis Antetokounmpo", "Display Player":"Giannis Antetokounmpo", "PTS":29.9,"3P":1.5,"2P":9.5,"Steals":1,"BLK":1,"FT":6.3,"TOV":3.7},
+  {"PLAYER":"Lebron James", "Display Player":"Lebron James", "PTS":25.7,"3P":2.2,"2P":7.6,"Steals":1.2,"BLK":0.5,"FT":4,"TOV":4},
+  {"PLAYER":"Kawhi Leonard", "Display Player":"Kawhi Leonard", "PTS":26.9,"3P":2.1,"2P":7.2,"Steals":1.8,"BLK":0.6,"FT":6.1,"TOV":2.7},
+  {"PLAYER":"Anthony Davis", "Display Player":"Anthony Davis","PTS":26.7,"3P":1.2,"2P":8.1,"Steals":1.5,"BLK":2.4,"FT":7,"TOV":2.5},
+  {"PLAYER":"James Harden", "Display Player":"James Harden", "PTS":34.4,"3P":4.4,"2P":5.4,"Steals":1.7,"BLK":0.9,"FT":10.1,"TOV":4.5},
+];
+
+var label = [
+    "PTS",
+    "3P",
+    "2P",
+    "Steals",
+    "BLK",
+    "FT",
+    "TOV"
+];
+
+var scales = {
+  "PTS":40,
+  "3P":5,
+  "2P":10,
+  "Steals":3,
+  "BLK":2.5,
+  "FT":11,
+  "TOV":5
+};
+
+var scalesAndAxes = {};
+label.forEach(function (label){
+
+  var o = {};
+  o.scale = d3.scale.linear().domain([0, scales[label]]);
+  o.axis = d3.svg.axis()
+    .scale(o.scale)
+    .tickFormat(function(d, i){ if(i != 0){return d + "";} else {return "";}  })
+    .orient("bottom");
+
+  scalesAndAxes[label] = o;
+});
+
+function createPlayerCheckBoxes(data) {
+  var Playercbcontainer = document.getElementById("Player-container");
+  var checkBoxes = data.map((row) => {
+    var cbcontainer = document.createElement("div");
+    cbcontainer.setAttribute('style','padding-bottom: 5px;');
+    cbcontainer.classList.add("Player-checkbox-container")
+    var checkBox = document.createElement("input");
+    var label = document.createElement("span");
+    checkBox.setAttribute("type", "checkbox");
+    checkBox.value = row["Display Player"];
+    checkBox.checked = true;
+    checkBox.classList.add("Player-checkbox");
+    checkBox.addEventListener('change', (event) => {
+      removeColors();
+      refilterData();
+    })
+
+    label.innerHTML = checkBox.value;
+    cbcontainer.appendChild(checkBox);
+    cbcontainer.appendChild(label);
+    return cbcontainer;
+  });
+  checkBoxes.forEach((checkBox) => Playercbcontainer.appendChild(checkBox));
+}
+
+var radarChartOptions = {
+  label: label,
+  scalesAndAxes: scalesAndAxes,
+};
+
+function removeColors() {
+  var colorBoxes = document.querySelectorAll(".legend-color")
+  colorBoxes.forEach((div) => div.parentNode.removeChild(div));
+}
+
+function refilterData() {
+  var cbinput = Array.from(document.querySelectorAll("input.Player-checkbox:checked"));
+  var selectedValues = cbinput.map((input) => input.value);
+  var filteredData = data.filter((row) => selectedValues.includes(row["Display Player"]))
+  RadarChart(".radarChart", filteredData, radarChartOptions);
+}
+
+
+
+createPlayerCheckBoxes(data);
+RadarChart(".radarChart", data, radarChartOptions);
