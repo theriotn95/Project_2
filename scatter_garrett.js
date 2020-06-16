@@ -1,48 +1,21 @@
-//http://jsfiddle.net/Xotic750/AXg99/
-​
-var script1 = document.createElement("script"),
-    script2 = document.createElement("script"),
-    oldD3;
-​
-function noConflict() {
-    oldD3 = d3;
-    console.log("loaded old");
-    script2.type = 'text/javascript';
-    script2.src = "http://d3js.org/d3.v3.min.js";
-    script2.addEventListener("load", ready, false);
-    document.head.appendChild(script2);
-}
-​
-function ready() {
-    console.log("loaded new");
-    console.log(d3, oldD3);
-    document.getElementById("version1").textContent = oldD3.version;
-    document.getElementById("version2").textContent = d3.version;
-}
-​
-script1.type = 'text/javascript';
-script1.src = "http://d3js.org/d3.v2.min.js";
-script1.addEventListener("load", noConflict, false);
-document.head.appendChild(script1);
-​
 var width = parseInt(d3.select("#chLine").style("width"));
-​
+
 var height = width - width / 3;
-​
+
 var margin = 20;
-​
+
 var labelArea = 110;
-​
+
 var tPadBot = 30;
 var tPadLeft = 30;
-​
+
 var svg = d3
     .select("#chLine")
     .append("svg")
     .attr("width", width)
     .attr("height", height)
     .attr("class", "chart");
-​
+
 var circRadius;
 function crGet() {
     if (width <= 510) {
@@ -53,14 +26,14 @@ function crGet() {
     }
 }
 crGet();
-​
+
 //Labels for Axis
-​
+
 //Bottom Axis
 svg.append("g").attr("class", "xText");
-​
+
 var xText = d3.select(".xText");
-​
+
 function xTextRefresh() {
     xText.attr(
         "transform",
@@ -73,7 +46,7 @@ function xTextRefresh() {
 }
 xTextRefresh();
 console.log(xTextRefresh);
-​
+
 //Rebounds
 xText
   .append("text")
@@ -82,7 +55,7 @@ xText
   .attr("data-axis", "x")
   .attr("class", "aText active x")
   .text("Total Rebounds Per Game");
-​
+
   //Assists
   xText
   .append("text")
@@ -91,7 +64,7 @@ xText
   .attr("data-axis", "x")
   .attr("class", "aText inactive x")
   .text("Assists Per Game");
-​
+
 //3 pointers attempted
 xText
   .append("text")
@@ -100,16 +73,16 @@ xText
   .attr("data-axis", "x")
   .attr("class", "aText inactive x")
   .text("3 Pointers Attempted");
-​
-​
+
+
 //Left Axis
 var leftTextX = margin + tPadLeft;
 var leftTextY = (height + labelArea) / 2 - labelArea;
-​
+
 svg.append("g").attr("class", "yText");
-​
+
 var yText = d3.select(".yText");
-​
+
 function yTextRefresh() {
     yText.attr(
       "transform",
@@ -118,7 +91,7 @@ function yTextRefresh() {
   }
   yTextRefresh();
   console.log(yTextRefresh);
-​
+
 //Points
 yText
   .append("text")
@@ -127,7 +100,7 @@ yText
   .attr("data-axis", "y")
   .attr("class", "aText active y")
   .text("Points Per Game");
-​
+
 //Field Goal Percentage
 yText
   .append("text")
@@ -136,7 +109,7 @@ yText
   .attr("data-axis", "y")
   .attr("class", "aText inactive y")
   .text("Field Goal Percentage");
-​
+
 //3 Point Percentage
 yText
   .append("text")
@@ -145,22 +118,23 @@ yText
   .attr("data-axis", "y")
   .attr("class", "aText inactive y")
   .text("3 Point Percentage");
-​
+
 //Import csv
-d3.csv("NBA_Top_50.csv").then(function(data)  {
+d3.csv("NBA_Top_50.csv").then(function(data) {
     // Visualize the data
     visualize(data);
   });
-​
+
+  
   
 //visualization function
   function visualize(theData) {
-​
+
     var curX = "PTS";
     var curY = "Ratings";
     var curA = "AST"
     var curR = "TRB"
-​
+
     var xMin;
     var xMax;
     var yMin;
@@ -172,7 +146,7 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
     .offset([30, -50])
     .html(function(d) {
         var theX;
-​
+
         var playerName = "<div>" + d.Player + "</div>";
         
         var theY = "<div>" + curY + ": " + d[curY] + "</div>";
@@ -181,12 +155,12 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
           
           theX = "<div>" + curX + ": " + d[curX] + "</div>";
         }
-​
+
         if (curA === "AST") {
           theA = "<div>" + curA + ": " + d[curA] + "</div>";
-​
+
         }
-​
+
         if (curR === "TRB") {
           theR = "<div>" + curR + ": " + d[curR] + "</div>";
         }
@@ -203,22 +177,22 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
       });
     // Call the toolTip function.
     svg.call(toolTip);
-​
+
     function xMinMAX() {
       xMin = d3.min(theData, function(d) {
         return parseFloat(d[curX]) * 0.90;
       });
-​
+
       xMax = d3.max(theData, function(d) {
         return parseFloat(d[curX]) * 1.10;
       });
     }
-​
+
     function yMinMax() {
       yMin = d3.min(theData, function(d) {
         return parseFloat(d[curY]) * 0.90;
       });
-​
+
       yMax = d3.max(theData, function(d) {
         return parseFloat(d[curY]) * 1.10;
       });
@@ -234,7 +208,7 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
 //text clicked to active
         clickedText.classed("inactive", false).classed("active", true);
     }
-​
+
   //Scatter plot placement
     xMinMAX();
     yMinMax();
@@ -247,7 +221,7 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
       .scaleLinear()
       .domain([yMin, yMax])
       .range([height - margin - labelArea, margin]);
-​
+
     var xAxis = d3.axisBottom(xScale);
     var yAxis = d3.axisLeft(yScale);
 //tick counts
@@ -262,10 +236,10 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
       }
     }
     tickCount();
-​
-​
+
+
     //append axes in group elements
-​
+
     svg
       .append("g")
       .call(xAxis)
@@ -276,11 +250,11 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
       .call(yAxis)
       .attr("class", "yAxis")
       .attr("transform", "translate(0," + (margin - labelArea) + ", 0)");
-​
+
   
     //grouping for dots and labels 
     var theCircles = svg.selectAll("g theCircles").data(theData).enter();
-​
+
     //append circles for each player
     theCircles
       .append("circle")
@@ -294,7 +268,7 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
       .attr("class", function(d) {
         return "playerCircle" + d.abbr;
       })
-​
+
       //mouseover and mouseout rules
       .on("mouseover", function(d) {
         toolTip.show(d, this);
@@ -304,7 +278,7 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
         toolTip.hide(d);
         d3.select(this).style("stroke", "#e3e3e3");
       });
-​
+
     theCircles
       .append("text")
       .text(function(d) {
@@ -326,24 +300,24 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
         toolTip.hide(d);
         d3.select("." + d.abbr).style("stroke", "#e3e3e3");
       });
-​
+
     //making graph dynamic
     d3.selectAll(".aText").on("click", function() {
       var self = d3.select(this);
-​
+
       if(self.classed("inactive")) {
         var axis = self.attr("data-axis");
         var name = self.attr("data-name");
-​
+
         if (axis === "x") {
           curX = name;
-​
+
           xMinMAX();
-​
+
           xScale.domain([xMin, xMax]);
-​
+
           svg.select(".xAxis").transition().duration(300).call(xAxis);
-​
+
           d3.selectAll("circle").each(function() {
             d3 
               .select(this)
@@ -353,7 +327,7 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
               })
               .duration(300);
           });
-​
+
           d3.selectAll(".playerText").each(function() {
             d3
               .select(this)
@@ -363,18 +337,18 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
               })
               .duration(300);
           });
-​
+
         //change classes of active label and clicked on label
         labelChange(axis, self);
       }
       else {
         curY = name; 
         yMinMax();
-​
+
         yScale.domain([yMin, yMax]);
-​
+
         svg.select(".yAxis").transition().duration(300).call(yAxis);
-​
+
         d3.selectAll("circle").each(function() {
           d3
             .select(this)
@@ -384,7 +358,7 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
             })
             .duration(300);
         });
-​
+
         //change location of player text
         d3.selectAll(".playerText").each(function() {
           d3 
@@ -395,43 +369,43 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
             })
             .duration(300);
         });
-​
+
         //change classes of active label and clicked label
         labelChange(axis, self);
-​
-​
+
+
        }
       }
     });
-​
+
   //changing window sizes
   d3.select(window).on("resize", resize);
-​
+
   function resize() {
     width = parseInt(d3.select("chLine").style("width"));
     height = width = width / 3.9;
     leftTextY = (height + labelArea) / 2 - labelArea;
-​
+
     svg.attr("width", width).attr("height", height);
-​
+
     xScale.range([margin + labelArea, width - margin]);
     yScale.range([height - margin - labelArea, margin]);
-​
+
     svg
       .select(".xAxis")
       .call(xAxis)
       .attr("transform", "translate(0," + (height - margin - labelArea) + ")");
     
     svg.select(".yAxis").call(yAxis);
-​
+
     tickCount();
-​
+
     //update labels
     xTextRefresh();
     yTextRefresh();
-​
+
     crGet();
-​
+
   d3
     .selectAll("circle")
     .attr("cy", function(d) {
@@ -443,9 +417,9 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
     .attr("r", function() {
       return circRadius;
     });
-​
+
   //change location and size of player names
-​
+
   d3
     .selectAll(".playerText")
     .attr("dy", function(d) {
@@ -456,6 +430,6 @@ d3.csv("NBA_Top_50.csv").then(function(data)  {
     })
     .attr("r", circRadius / 3);
   }
-​
-​
+
+
 }
