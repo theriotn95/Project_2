@@ -11,7 +11,7 @@ from flask import Flask, jsonify
 #################################################
 # Database Setup
 #################################################
-engine = create_engine("sqlite:///titanic.sqlite")
+engine = create_engine("sqlite:///nba_data.sqlite")
 
 # reflect an existing database into a new model
 Base = automap_base()
@@ -19,7 +19,7 @@ Base = automap_base()
 Base.prepare(engine, reflect=True)
 
 # Save reference to the table
-Passenger = Base.classes.passenger
+Players = Base.classes.player
 
 #################################################
 # Flask Setup
@@ -37,7 +37,7 @@ def welcome():
     return (
         f"Available Routes:<br/>"
         f"/api/v1.0/names<br/>"
-        f"/api/v1.0/passengers"
+        f"/api/v1.0/player"
     )
 
 
@@ -46,9 +46,8 @@ def names():
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    """Return a list of all passenger names"""
-    # Query all passengers
-    results = session.query(Passenger.name).all()
+    # Query all players
+    results = session.query(Players.name).all()
 
     session.close()
 
@@ -58,27 +57,26 @@ def names():
     return jsonify(all_names)
 
 
-@app.route("/api/v1.0/passengers")
-def passengers():
+@app.route("/api/v1.0/player")
+def player():
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    """Return a list of passenger data including the name, age, and sex of each passenger"""
-    # Query all passengers
-    results = session.query(Passenger.name, Passenger.age, Passenger.sex).all()
+    
+    # Query all players
+    results = session.query(Players.name, Players.ratings, Players.salaries).all()
 
     session.close()
 
-    # Create a dictionary from the row data and append to a list of all_passengers
-    all_passengers = []
+    all_players = []
     for name, age, sex in results:
         passenger_dict = {}
         passenger_dict["name"] = name
-        passenger_dict["age"] = age
-        passenger_dict["sex"] = sex
+        passenger_dict["rating"] = rating
+        passenger_dict["salaries"] = salaries
         all_passengers.append(passenger_dict)
 
-    return jsonify(all_passengers)
+    return jsonify(all_players)
 
 
 if __name__ == '__main__':
